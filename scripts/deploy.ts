@@ -2,7 +2,7 @@ import { ethers, network } from "hardhat";
 import { networkConfig } from "./network-config";
 
 // PMC: PasswordManagerConsumer
-async function deployPMC(verbose: boolean = true): Promise<string> {
+export default async function deployPMC(verbose: boolean = true): Promise<string> {
     try {
         // Print network configuration
         const chainId: number = (network.config.chainId as number) ?? process.env.DEFAULT_CHAIN_ID;
@@ -24,16 +24,20 @@ async function deployPMC(verbose: boolean = true): Promise<string> {
                 CloneFactory: libAddress
             }
         });
-        await pmc.waitForDeployment();
 
-        // Return address of deployed PMC Contract
-        return await pmc.getContractAddress();
+        // Return PMC Contract address
+        await pmc.waitForDeployment();
+        const pmcAddress =  await pmc.getContractAddress();
+        if (verbose) {
+            console.log(`PMC contract has been deployed to address ${pmcAddress}`)
+        }    
+        return pmcAddress;
     } catch (err) {
         throw new Error(`deployPMC(): ${err}`)
     }
 }
 
 // Test
-deployPMC()
-    .then(contractAddress => console.log(`PMC contract has been deployed to address ${contractAddress}`))
-    .catch(err => console.error(err));
+// deployPMC()
+//     .then(contractAddress => console.log(`PMC contract has been deployed to address ${contractAddress}`))
+//     .catch(err => console.error(err));
