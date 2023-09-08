@@ -3,6 +3,8 @@
 pragma solidity ^0.8.8;
 
 import "./PasswordManagerStorageFactory.sol";
+import "./PasswordManagerStorage.sol";
+import "./DataStruct.sol";
 
 contract PasswordManagerConsumer is PasswordManagerStorageFactory {
     // Custom Errors:
@@ -15,7 +17,7 @@ contract PasswordManagerConsumer is PasswordManagerStorageFactory {
     event ThanksForSupporting(address donator, uint256 value);
 
     // State variables
-    mapping(address => address) private s_storageAddress;
+    mapping(address => address) private s_consumerStorageAddress;
 
     // functions
     constructor() {
@@ -42,38 +44,54 @@ contract PasswordManagerConsumer is PasswordManagerStorageFactory {
 
     function registerConsumer() external notForRegisteredConsumer {
         address consumerStorageAddress = _createStorageInstance();
-        s_storageAddress[_msgSender()] = consumerStorageAddress;
+        s_consumerStorageAddress[_msgSender()] = consumerStorageAddress;
         emit PasswordManagerConsumer__ConsumerRegistered(_msgSender());
     }
 
     function addLoginAccount(
         string calldata _encrypted__name,
         string calldata _encrypted__URI,
-        string calldata _encrypted__consumername,
+        string calldata _encrypted__username,
         string calldata _encrypted__email,
         string calldata _encrypted__password
     ) external onlyRegisteredConsumer {
         PasswordManagerStorage consumerStorage = PasswordManagerStorage(
-            s_storageAddress[_msgSender()]
+            s_consumerStorageAddress[_msgSender()]
         );
         consumerStorage.addEncryptedLoginAccount(
             _encrypted__name,
             _encrypted__URI,
-            _encrypted__consumername,
+            _encrypted__username,
             _encrypted__email,
             _encrypted__password
         );
         emit PasswordManagerConsumer__ConsumerLoginAccountAdded(_msgSender());
     }
 
+    function getLoginAccount()
+        external
+        view
+        onlyRegisteredConsumer
+        returns (EncryptedLoginAccount[] memory)
+    {
+        PasswordManagerStorage consumerStorage = PasswordManagerStorage(
+            s_consumerStorageAddress[_msgSender()]
+        );
+        return consumerStorage.getEncryptedLoginAccount();
+    }
+
     function getContractAddress() public view returns (address) {
         return address(this);
+    }
+
+    function getConsumerStorageAddress() public view returns (address) {
+        return s_consumerStorageAddress[_msgSender()];
     }
 
     function _isRegisteredConsumer(
         address consumer
     ) internal view returns (bool) {
-        return (s_storageAddress[consumer] != address(0));
+        return (s_consumerStorageAddress[consumer] != address(0));
     }
 
     // Modifiers

@@ -4,6 +4,7 @@ pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./CloneFactory.sol";
+import "./DataStruct.sol";
 
 /**
  * @title  PasswordManagerStorage Smart Contract (Cloneable)
@@ -12,15 +13,6 @@ import "./CloneFactory.sol";
  * @dev *Note that the owner of the original/sample version of this contract is whoever deployed it.
  */
 contract PasswordManagerStorage is Ownable {
-    // structs definition
-    struct EncryptedLoginAccount {
-        string encrypted__URI;
-        string encrypted__name;
-        string encrypted__username;
-        string encrypted__email;
-        string encrypted__password;
-    }
-
     // Custom errors
     error PasswordManagerStorage__OnlyUninitializedClone();
     error PasswordManagerStorage__CallerIsNotFactory();
