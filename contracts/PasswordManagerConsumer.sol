@@ -19,7 +19,7 @@ contract PasswordManagerConsumer is PasswordManagerStorageFactory {
 
     // functions
     constructor() {
-        // PasswordManagerStorageFactory -> CloneFactory, Ownable contracts' constructors will be called
+        // Ownable Contract's constructors will be called
     }
 
     /**
@@ -32,23 +32,17 @@ contract PasswordManagerConsumer is PasswordManagerStorageFactory {
         emit ThanksForSupporting(_msgSender(), msg.value);
     }
 
-    function getContractAddress() public view returns (address) {
-        return address(this);
+    fallback() external payable {
+        _supportUs();
     }
 
-    function registerConsumer(
-        string calldata _encrypted__publicKeyHex,
-        string calldata _encrypted__privateKeyHex
-    ) external notForRegisteredConsumer {
-        (
-            PasswordManagerStorage consumerStorage,
-            address consumerStorageAddress
-        ) = _createStorageInstance();
+    receive() external payable {
+        _supportUs();
+    }
+
+    function registerConsumer() external notForRegisteredConsumer {
+        address consumerStorageAddress = _createStorageInstance();
         s_storageAddress[_msgSender()] = consumerStorageAddress;
-        consumerStorage.addEncryptedKeyPair(
-            _encrypted__publicKeyHex,
-            _encrypted__privateKeyHex
-        );
         emit PasswordManagerConsumer__ConsumerRegistered(_msgSender());
     }
 
@@ -72,20 +66,14 @@ contract PasswordManagerConsumer is PasswordManagerStorageFactory {
         emit PasswordManagerConsumer__ConsumerLoginAccountAdded(_msgSender());
     }
 
-    // function removeconsumer() external {}
+    function getContractAddress() public view returns (address) {
+        return address(this);
+    }
 
     function _isRegisteredConsumer(
         address consumer
-    ) private view returns (bool) {
+    ) internal view returns (bool) {
         return (s_storageAddress[consumer] != address(0));
-    }
-
-    fallback() external payable {
-        _supportUs();
-    }
-
-    receive() external payable {
-        _supportUs();
     }
 
     // Modifiers

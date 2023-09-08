@@ -17,7 +17,8 @@ contract PasswordManagerStorageFactory is Ownable {
      * @dev Cloned instances of Storage Contract will be created based on such sample Storage Contract, and thus will delegate all calls to the sample contract, while maintaining a separate states
      */
     constructor() {
-        // deploy the sample version of the storage contract
+        // Ownable Contract's constructor will be called
+        // deploy the sample version of the Storage Contract
         PasswordManagerStorage sampleStorage = new PasswordManagerStorage();
         s_sampleStorageAddress = sampleStorage.getContractAddress();
     }
@@ -26,7 +27,7 @@ contract PasswordManagerStorageFactory is Ownable {
         return s_sampleStorageAddress;
     }
 
-    function _setSampleStorageAddress(
+    function setSampleStorageAddress(
         address samepleStorageAddress
     ) external onlyOwner {
         s_sampleStorageAddress = samepleStorageAddress;
@@ -34,13 +35,16 @@ contract PasswordManagerStorageFactory is Ownable {
 
     function _createStorageInstance()
         internal
-        returns (PasswordManagerStorage, address)
+        returns (address instanceAddress)
     {
-        address cloneAddress = CloneFactory.createClone(getSampleStorageAddress());
+        instanceAddress = CloneFactory.createClone(getSampleStorageAddress());
         PasswordManagerStorage newInstance = PasswordManagerStorage(
-            cloneAddress
+            instanceAddress
         );
-        newInstance.initializeThisClone(getSampleStorageAddress(), _msgSender());
-        return (newInstance, cloneAddress);
+        newInstance.initializeThisClone(
+            getSampleStorageAddress(),
+            _msgSender()
+        );
+        return instanceAddress;
     }
 }

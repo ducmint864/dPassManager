@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./CloneFactory.sol";
 
 /**
- * @title  PasswordManagerStorage Smart Contract
+ * @title  PasswordManagerStorage Smart Contract (Cloneable)
  * @author https://github.com/ducmint864
  * @notice Who would be the owner of a cloned version of this contract? Answer is the owner of any instance of this contract is the consumer/user of DePassword
  * @dev *Note that the owner of the original/sample version of this contract is whoever deployed it.
@@ -21,13 +21,9 @@ contract PasswordManagerStorage is Ownable {
         string encrypted__password;
     }
 
-    struct EncryptedKeyPair {
-        string encrypted__publicKeyHex;
-        string encrypted__privateKeyHex;
-    }
-
     // Custom errors
-    error PasswordManager__onlyUninitializedClone();
+    error PasswordManagerStorage__onlyUninitializedClone();
+    error PasswordManagerStorage__callerIsNotFactory();
 
     // Events
     event KeyPairdAdded(address userAddress);
@@ -35,7 +31,6 @@ contract PasswordManagerStorage is Ownable {
 
     // State variables
     mapping(address => EncryptedLoginAccount[]) private s_accountList;
-    mapping(address => EncryptedKeyPair) private s_keyPair;
 
     // functions
     constructor() {
@@ -55,20 +50,11 @@ contract PasswordManagerStorage is Ownable {
         return s_accountList[_msgSender()];
     }
 
-    function getEncryptedKeyPair()
-        external
-        view
-        onlyOwner
-        returns (EncryptedKeyPair memory)
-    {
-        return s_keyPair[_msgSender()];
-    }
-
     function initializeThisClone(
         address sampleStorageAddress,
         address consumer
-    ) external onlyUninitializedClone(sampleStorageAddress) {
-        _transferOwnership(consumer);
+    ) external checkValidClone(sampleStorageAddress) {
+        _initializeThisClone(consumer);
     }
 
     function addEncryptedLoginAccount(
@@ -90,26 +76,27 @@ contract PasswordManagerStorage is Ownable {
         return true;
     }
 
-    function addEncryptedKeyPair(
-        string calldata _encrypted__publicKeyHex,
-        string calldata _encrypted__privateKeyHex
-    ) external onlyOwner returns (bool) {
-        s_keyPair[msg.sender] = EncryptedKeyPair({
-            encrypted__publicKeyHex: _encrypted__publicKeyHex,
-            encrypted__privateKeyHex: _encrypted__privateKeyHex
-        });
-        return true;
+    function _initializeThisClone(address consumer) internal {
+        _transferOwnership(consumer);
     }
 
     // Modifiers
-    modifier onlyUninitializedClone(address sampleStorageAddress) {
+    modifier checkValidClone(address sampleStorageAddress) {
+        PasswordManagerStorage sampleStorage = PasswordManagerStorage(
+            sampleStorageAddress
+        );
+        bool callerIsFactory = (_msgSender() == sampleStorage.owner());
+        if (!callerIsFactory) {
+            revert PasswordManagerStorage__callerIsNotFactory();
+        }
+
         bool amICloned = CloneFactory.isClone(
             sampleStorageAddress,
             getContractAddress()
         );
         bool ownerIsNull = (owner() == address(0));
-        if (!(amICloned && ownerIsNull)) {
-            revert PasswordManager__onlyUninitializedClone();
+        if (!(amICloned && ownerIsNull && callerIsFactory)) {
+            revert PasswordManagerStorage__onlyUninitializedClone();
         }
         _;
     }
