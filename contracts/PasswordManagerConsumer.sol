@@ -8,7 +8,7 @@ import "./DataStruct.sol";
 
 contract PasswordManagerConsumer is PasswordManagerStorageFactory {
     // Custom Errors:
-    error PasswordManagerConsumer__ConsumerNotRegistered();
+    error PasswordManagerConsumer__OnlyRegisteredConsumer();
     error PasswordmanagerConsumer__NotForRegisteredConsumer();
 
     // Events
@@ -97,7 +97,7 @@ contract PasswordManagerConsumer is PasswordManagerStorageFactory {
     // Modifiers
     modifier onlyRegisteredConsumer() {
         if (!_isRegisteredConsumer(_msgSender())) {
-            revert PasswordManagerConsumer__ConsumerNotRegistered();
+            revert PasswordManagerConsumer__OnlyRegisteredConsumer();
         }
         _;
     }
