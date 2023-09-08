@@ -22,8 +22,8 @@ contract PasswordManagerStorage is Ownable {
     }
 
     // Custom errors
-    error PasswordManagerStorage__onlyUninitializedClone();
-    error PasswordManagerStorage__callerIsNotFactory();
+    error PasswordManagerStorage__OnlyUninitializedClone();
+    error PasswordManagerStorage__CallerIsNotFactory();
 
     // Events
     event KeyPairdAdded(address userAddress);
@@ -87,7 +87,7 @@ contract PasswordManagerStorage is Ownable {
         );
         bool callerIsFactory = (_msgSender() == sampleStorage.owner());
         if (!callerIsFactory) {
-            revert PasswordManagerStorage__callerIsNotFactory();
+            revert PasswordManagerStorage__CallerIsNotFactory();
         }
 
         bool amICloned = CloneFactory.isClone(
@@ -96,7 +96,7 @@ contract PasswordManagerStorage is Ownable {
         );
         bool ownerIsNull = (owner() == address(0));
         if (!(amICloned && ownerIsNull && callerIsFactory)) {
-            revert PasswordManagerStorage__onlyUninitializedClone();
+            revert PasswordManagerStorage__OnlyUninitializedClone();
         }
         _;
     }

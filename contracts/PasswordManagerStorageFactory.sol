@@ -10,8 +10,11 @@ contract PasswordManagerStorageFactory is Ownable {
     // State variables
     address private s_sampleStorageAddress;
 
-    // Functions
+    // Custom errors
+    error PasswordManagerStorageFactory__OnlyNonZeroAddress();
 
+    // Functions
+    
     /**
      * @dev On deployment of this Factory Contract, we also need to deploy a sample/base version of the Storage Contract
      * @dev Cloned instances of Storage Contract will be created based on such sample Storage Contract, and thus will delegate all calls to the sample contract, while maintaining a separate states
@@ -29,7 +32,7 @@ contract PasswordManagerStorageFactory is Ownable {
 
     function setSampleStorageAddress(
         address samepleStorageAddress
-    ) external onlyOwner {
+    ) external onlyOwner onlyNonZeroAddress(samepleStorageAddress) {
         s_sampleStorageAddress = samepleStorageAddress;
     }
 
@@ -46,5 +49,13 @@ contract PasswordManagerStorageFactory is Ownable {
             _msgSender()
         );
         return instanceAddress;
+    }
+
+    // Modifiers
+    modifier onlyNonZeroAddress(address A) {
+        if (A == address(0)) {
+            revert PasswordManagerStorageFactory__OnlyNonZeroAddress();
+        }
+        _;
     }
 }
