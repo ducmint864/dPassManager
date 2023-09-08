@@ -30,7 +30,7 @@ contract PasswordManagerStorage is Ownable {
     event LoginAccountAdded(address userAddress);
 
     // State variables
-    mapping(address => EncryptedLoginAccount[]) private s_accountList;
+    EncryptedLoginAccount[] private s_accountList;
 
     // functions
     constructor() {
@@ -47,7 +47,7 @@ contract PasswordManagerStorage is Ownable {
         onlyOwner
         returns (EncryptedLoginAccount[] memory)
     {
-        return s_accountList[_msgSender()];
+        return s_accountList;
     }
 
     function initializeThisClone(
@@ -64,7 +64,7 @@ contract PasswordManagerStorage is Ownable {
         string calldata _encrypted__email,
         string calldata _encrypted__password
     ) external onlyOwner returns (bool) {
-        s_accountList[msg.sender].push(
+        s_accountList.push(
             EncryptedLoginAccount({
                 encrypted__URI: _encrypted__URI,
                 encrypted__name: _encrypted__name,
