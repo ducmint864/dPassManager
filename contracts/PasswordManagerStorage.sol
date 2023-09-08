@@ -3,35 +3,16 @@
 pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./CloneFactory.sol";
 
 /**
- * @title  PasswordManagerStorage smart contracat
+ * @title  PasswordManagerStorage Smart Contract
  * @author https://github.com/ducmint864
  * @notice Who would be the owner of a cloned version of this contract? Answer is the owner of any instance of this contract is the consumer/user of DePassword
- * @dev Note that the owner of the original/sample version of this contract is whoever deployed it.
+ * @dev *Note that the owner of the original/sample version of this contract is whoever deployed it.
  */
 contract PasswordManagerStorage is Ownable {
-    // struct EncryptedIdentity {
-    //     string _title;
-    //     string _firstName;
-    //     string _middleName;
-    //     string _lastName;
-    //     string _username;
-    //     string _company;
-    //     string _socialSecurityNumber;
-    //     string _passPortNumber;
-    //     string _LicenseNumber;
-    //     string _email;
-    //     string _phone;
-    //     string _address1;
-    //     string _address2;
-    //     string _address3;
-    //     string _cityOrTown;
-    //     string _stateOrProvince;
-    //     string _postalCode;
-    //     string _country;
-    // }
-
+    // structs definition
     struct EncryptedLoginAccount {
         string encrypted__URI;
         string encrypted__name;
@@ -43,9 +24,10 @@ contract PasswordManagerStorage is Ownable {
     struct EncryptedKeyPair {
         string encrypted__publicKeyHex;
         string encrypted__privateKeyHex;
-        string iv;
     }
+
     // Custom errors
+    error PasswordManager__onlyUninitializedClone();
 
     // Events
     event KeyPairdAdded(address userAddress);
@@ -56,13 +38,40 @@ contract PasswordManagerStorage is Ownable {
     mapping(address => EncryptedKeyPair) private s_keyPair;
 
     // functions
-    constructor() {}
-
-    function _initalizeClone(address consumer) external {
-        transferOwnership(consumer);
+    constructor() {
+        // Ownable contract's constructor will be called
     }
 
-    function _addEncryptedLoginAccount(
+    function getContractAddress() public view returns (address) {
+        return address(this);
+    }
+
+    function getEncryptedLoginAccount()
+        external
+        view
+        onlyOwner
+        returns (EncryptedLoginAccount[] memory)
+    {
+        return s_accountList[_msgSender()];
+    }
+
+    function getEncryptedKeyPair()
+        external
+        view
+        onlyOwner
+        returns (EncryptedKeyPair memory)
+    {
+        return s_keyPair[_msgSender()];
+    }
+
+    function initializeThisClone(
+        address sampleStorageAddress,
+        address consumer
+    ) external onlyUninitializedClone(sampleStorageAddress) {
+        _transferOwnership(consumer);
+    }
+
+    function addEncryptedLoginAccount(
         string calldata _encrypted__name,
         string calldata _encrypted__URI,
         string calldata _encrypted__username,
@@ -81,38 +90,27 @@ contract PasswordManagerStorage is Ownable {
         return true;
     }
 
-    function _addEncryptedKeyPair(
+    function addEncryptedKeyPair(
         string calldata _encrypted__publicKeyHex,
-        string calldata _encrypted__privateKeyHex,
-        string calldata _iv
+        string calldata _encrypted__privateKeyHex
     ) external onlyOwner returns (bool) {
         s_keyPair[msg.sender] = EncryptedKeyPair({
             encrypted__publicKeyHex: _encrypted__publicKeyHex,
-            encrypted__privateKeyHex: _encrypted__privateKeyHex,
-            iv: _iv
+            encrypted__privateKeyHex: _encrypted__privateKeyHex
         });
         return true;
     }
 
-    function _getContractAddress() external view returns (address) {
-        return address(this);
-    }
-
-    function _getEncryptedLoginAccount()
-        external
-        view
-        onlyOwner
-        returns (EncryptedLoginAccount[] memory)
-    {
-        return s_accountList[_msgSender()];
-    }
-
-    function _getEncryptedKeyPair()
-        external
-        view
-        onlyOwner
-        returns (EncryptedKeyPair memory)
-    {
-        return s_keyPair[_msgSender()];
+    // Modifiers
+    modifier onlyUninitializedClone(address sampleStorageAddress) {
+        bool amICloned = CloneFactory.isClone(
+            sampleStorageAddress,
+            getContractAddress()
+        );
+        bool ownerIsNull = (owner() == address(0));
+        if (!(amICloned && ownerIsNull)) {
+            revert PasswordManager__onlyUninitializedClone();
+        }
+        _;
     }
 }
