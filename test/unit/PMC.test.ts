@@ -159,7 +159,7 @@ describe("PMC Contract (including tests for PMSF Contract)", () => {
             const name = "1AACC1D86D99F9EDF5EF4C350AECD6EB017B1FA4A14FEDA26885C4C23341E07D";
             const URI = "7815A0706FF6B4FC3D9E52B706EB77B8";
             const username = "";
-            const password = "F9000B7904762BB4DC5765CF9C1C8FEE";
+            const password = "F9000B7904762BB4DC5765CF9C1C8FEE"; 
             await _pmc.registerConsumer();
             await _pmc.addLoginAccount(
                 name,

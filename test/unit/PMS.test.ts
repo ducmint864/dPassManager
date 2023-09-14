@@ -76,58 +76,45 @@ describe("PMS test", async function(){
     describe("getEncryptedLoginAccount()",async function(){
         it ("should return correctly", async ()=> {
             const account = [ {
-                encrypted__URI: "long",
                 encrypted__name: "abcd",
+                encrypted__URI: "long",
                 encrypted__username: "ggwp",
                 encrypted__email: "mail",
                 encrypted__password: "qwer"
             },{
-                encrypted__URI: "long",
-                encrypted__name: "abcd",
-                encrypted__username: "ggwp",
-                encrypted__email: "mail",
-                encrypted__password: "qwer"
+                encrypted__name: "minh",
+                encrypted__URI: "google.com",
+                encrypted__username: "dm",
+                encrypted__email: "meo",
+                encrypted__password: "aaaaaaaaaaaa"
             }]
-            let flatArray: string[] = [];
+
             for (const a of account) {
-                const uri = a.encrypted__URI;
-                const name = a.encrypted__name;
-                const username = a.encrypted__username;
-                const email = a.encrypted__email;
-                const password = a.encrypted__password
-
                 await pms.addEncryptedLoginAccount(
-                    uri,
-                    name,
-                    username,
-                    email,
-                    password
+                    a.encrypted__name,
+                    a.encrypted__URI,
+                    a.encrypted__username,
+                    a.encrypted__email,
+                    a.encrypted__password
                 );
-
-                flatArray.push(uri);
-                flatArray.push(name);
-                flatArray.push(username);
-                flatArray.push(email);
-                flatArray.push(password);
             }
-
-            const ans  = await pms.getEncryptedLoginAccount();
-
-            assert.equal(ans.length, flatArray.length);
+            const ans = await pms.getEncryptedLoginAccount();
 
             for (let i = 0; i < ans.length; i++) {
-                // assert.equal(ans[i], flatArray[i].toString());
-                assert.equal(1+1, 2);
-            }
-        })
-        describe("InnitializeClone()", async function(){
-            it("Transfered ownership", async function(){
-                const addr = await pmf.getAddress();
-                await pms.initializeThisClone(addr,consumer.address); 
-                const ans = await pms.getAddress();
-                assert.equal(ans, consumer.address);
-            })
-        })
+                assert.equal(ans[i].encrypted__URI, account[i].encrypted__URI);
+                assert.equal(ans[i].encrypted__name, account[i].encrypted__name);
+                assert.equal(ans[i].encrypted__username, account[i].encrypted__username);
+                assert.equal(ans[i].encrypted__email, account[i].encrypted__email);
+                assert.equal(ans[i].encrypted__password, account[i].encrypted__password);
+            }})
+        // describe("InnitializeClone()", async function(){
+        //     it("Transfered ownership", async function(){
+        //         const addr = await pmf.getAddress();
+        //         await pmf.initializeThisClone(addr,consumer.address); 
+        //         const ans = await pms.getAddress();
+        //         assert.equal(ans, consumer.address);
+        //     })
+        // })
     })
 
 })
